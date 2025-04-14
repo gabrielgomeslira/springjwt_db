@@ -1,6 +1,5 @@
-package com.example.springjwt_db.security;
+package com.example.springjwt_db.config;
 
-import com.example.springjwt_db.entity.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

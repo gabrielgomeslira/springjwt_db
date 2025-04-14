@@ -9,7 +9,7 @@ import com.example.springjwt_db.entity.Role;
 import com.example.springjwt_db.entity.User;
 import com.example.springjwt_db.repository.RoleRepository;
 import com.example.springjwt_db.repository.UserRepository;
-import com.example.springjwt_db.security.JwtUtils;
+import com.example.springjwt_db.config.JwtUtils;
 import com.example.springjwt_db.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
