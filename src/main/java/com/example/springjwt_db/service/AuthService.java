@@ -18,12 +18,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class AuthService {
     @Autowired
@@ -31,7 +33,7 @@ public class AuthService {
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
-    PasswordEncoder c;
+    PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
@@ -52,7 +54,7 @@ public class AuthService {
         Set<String> strRoles = signupRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
-        if (strRoles != null || strRoles.isEmpty()) {
+        if (strRoles == null || strRoles.isEmpty()) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                     .orElseGet(() -> roleRepository.save(new Role(ERole.ROLE_USER)));
             roles.add(userRole);
@@ -75,22 +77,30 @@ public class AuthService {
     }
 
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String jwt = jwtUtils.generateJwtToken(userDetails);
+        log.info("Tentando autenticar usuário: {}", loginRequest.getUsername());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            log.info("Autenticação bem sucedida para usuário: {}", loginRequest.getUsername());
+            
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String jwt = jwtUtils.generateJwtToken(userDetails);
 
-        UserDetailsImpl userDetailsImpl = (UserDetailsImp) userDetails;
+            UserDetailsImpl userDetailsImpl = (UserDetailsImpl) userDetails;
 
-        List<String> roles = userDetailsImpl.getAuthorites().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+            List<String> roles = userDetailsImpl.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
 
-        return new JwtResponse(jwt,
-                userDetailsImpl.getId(),
-                userDetailsImpl.getUsername(),
-                userDetailsImpl.getEmail(),
-                roles);
+            return new JwtResponse(jwt,
+                    userDetailsImpl.getId(),
+                    userDetailsImpl.getUsername(),
+                    userDetailsImpl.getEmail(),
+                    roles);
+        } catch (Exception e) {
+            log.error("Erro na autenticação: {}", e.getMessage());
+            throw e;
+        }
     }
 
 }
