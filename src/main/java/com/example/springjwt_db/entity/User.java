@@ -1,6 +1,5 @@
 package com.example.springjwt_db.entity;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,6 +10,7 @@ import org.hibernate.annotations.ManyToAny;
 
 import java.util.HashSet;
 import java.util.Set;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -30,9 +30,10 @@ public class User {
     @Column(length = 120, nullable = false)
     private String password;
 
-    @ManyToAny(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="user_roles",
-            joinColumns = @JoinColumn(name = "user_id"))
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_id"))
     private Set<Role> roles = new HashSet<>();
     
     public User(String username, String email, String password) {
